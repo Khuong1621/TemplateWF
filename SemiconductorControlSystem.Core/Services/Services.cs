@@ -101,6 +101,7 @@ namespace SemiconductorControlSystem.Services
     {
         public event EventHandler<SensorData>? OnDataReceived;
         private bool _isSampling;
+        private readonly object _lock = new object();
         private readonly Random _random = new Random();
 
         public async Task<SensorData> GetLatestDataAsync(string sensorName)
@@ -116,11 +117,20 @@ namespace SemiconductorControlSystem.Services
 
         public void StartSampling()
         {
-            _isSampling = true;
+            lock (_lock)
+            {
+                if (_isSampling) return; // Prevent multiple sampling loops
+                _isSampling = true;
+            }
+
             Task.Run(async () =>
             {
-                while (_isSampling)
+                while (true)
                 {
+                    lock (_lock)
+                    {
+                        if (!_isSampling) break;
+                    }
                     var data = await GetLatestDataAsync("Chamber_Temp_1");
                     OnDataReceived?.Invoke(this, data);
                     await Task.Delay(1000);
@@ -130,7 +140,10 @@ namespace SemiconductorControlSystem.Services
 
         public void StopSampling()
         {
-            _isSampling = false;
+            lock (_lock)
+            {
+                _isSampling = false;
+            }
         }
     }
 

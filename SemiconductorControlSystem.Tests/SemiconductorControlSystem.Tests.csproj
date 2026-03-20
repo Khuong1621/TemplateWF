@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SemiconductorControlSystem\SemiconductorControlSystem.csproj" />
+    <ProjectReference Include="..\SemiconductorControlSystem.Core\SemiconductorControlSystem.Core.csproj" />
   </ItemGroup>
 
 </Project>

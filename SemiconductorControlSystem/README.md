@@ -1,55 +1,58 @@
 # Semiconductor Equipment Control System (WinForms Skeleton)
 
-This project is a base architecture for an industrial equipment control system, specifically designed for semiconductor manufacturing scenarios (e.g., Robot Arms, Vacuum Chambers).
+This project is a modular architecture for an industrial equipment control system, specifically designed for semiconductor manufacturing scenarios.
 
-## 1. Project Architecture (Layered Architecture)
+## 1. Project Structure
 
-The system is divided into several layers to ensure separation of concerns and maintainability:
+The system is split into three main projects to ensure separation of concerns and testability:
 
-- **UI Layer (WinForms)**: Handles user interaction and realtime visualization.
-- **Business/Service Layer**: Contains equipment logic, state management, and orchestration.
-- **Data/Communication Layer**: Manages data flow from sensors and PLC communication.
-- **Models/Common**: Defines shared entities like `DeviceStatus`, `SensorData`, and configuration models.
+- **`SemiconductorControlSystem.Core`**: (Class Library - `.net8.0`)
+  - Contains all business logic, interfaces, and models.
+  - Independent of any UI framework, allowing it to be used in WinForms, WPF, or even as a Headless service.
+  - Includes: `Interfaces/`, `Models/`, `Services/`.
+- **`SemiconductorControlSystem`**: (WinForms Application - `.net8.0-windows`)
+  - The presentation layer.
+  - References `Core` and handles user interaction and realtime visualization.
+- **`SemiconductorControlSystem.Tests`**: (xUnit Test Project - `.net8.0`)
+  - Unit tests for the core logic.
+  - Demonstrates how to test industrial services using `Moq`.
 
-## 2. Folder Structure
+## 2. Key Features
 
-- `/Interfaces`: Defines contracts for all services (`IPLCService`, `IDeviceService`, etc.).
-- `/Services`: Contains concrete and mock implementations of the interfaces.
-- `/Models`: Shared data classes and enumerations.
-- `/UI`: WinForms forms and custom UI logic.
-- `/Config`: System configuration (JSON based).
+- **Decoupled Architecture**: Logic is completely separated from the UI.
+- **Dynamic Device Support**: Equipment is loaded from `config.json` and UI indicators are generated automatically.
+- **Realtime Simulation**: Uses `Async/Await` and `Events` to simulate hardware behavior.
+- **Manual Dependency Injection**: Services are injected into the Main Form via the constructor.
 
-## 3. Key Features
+## 3. How to Build and Run
 
-- **Dynamic Device Support**: Equipment is loaded from a configuration file and UI indicators are generated automatically.
-- **Realtime Simulation**: Uses `Async/Await` and `Events` to simulate PLC communication and sensor data streams.
-- **Manual Dependency Injection**: Services are injected into the Main Form via the constructor, allowing for easy swapping of Mock vs. Real hardware services.
-- **Logging**: Integrated log view with color-coded entries.
+### Prerequisites
+- .NET 8.0 SDK
 
-## 4. How to Build and Run
+### Build the entire solution
+```bash
+dotnet build SemiconductorControlSystem.sln
+```
 
-1. Open the project in **Visual Studio 2022** or **VS Code**.
-2. Restore NuGet packages (requires `Newtonsoft.Json`).
-3. Build the solution.
-4. Run the executable.
-   - Click **START SYSTEM** to initiate mock connection and start data sampling.
-   - Click **STOP SYSTEM** to shutdown all components.
+### Run Unit Tests
+Since the logic is in a pure .NET library (`Core`), you can run tests on any platform (Windows, Linux, macOS):
+```bash
+dotnet test SemiconductorControlSystem.Tests/SemiconductorControlSystem.Tests.csproj
+```
 
-## 5. Bonus: Real PLC & Device Integration
+### Run the UI (Windows Only)
+```bash
+dotnet run --project SemiconductorControlSystem/SemiconductorControlSystem.csproj
+```
 
-To move from Mock to Production, you can implement the interfaces with real hardware libraries:
+## 4. Bonus: Real PLC & Device Integration
 
-### PLC Integration (Modbus/OPC UA)
-- **Modbus**: Use libraries like `NModbus4` or `FluentModbus`. Implement `IPLCService` by wrapping the Modbus TCP client.
-- **OPC UA**: Use the `Opc.Ua.Fx` or `Opc.Ua.Client` libraries. This is standard for modern semiconductor equipment (SECS/GEM is also common).
+To transition to real hardware:
+- **Modbus**: Implement `IPLCService` using `NModbus4`.
+- **OPC UA**: Use `Opc.Ua.Client` to implement standard industrial communication.
+- **SECS/GEM**: Implement semiconductor-specific protocols for host-to-equipment communication.
 
-### SECS/GEM
-- For semiconductor-specific communication (Host to Equipment), look into libraries that implement the **SECS-II** and **GEM** standards (E4, E5, E30, E37).
-
-## 6. Future Expansions
-
-- **Database Logging**: Implement an `ILoggerService` that writes to SQL Server or InfluxDB for historical data.
-- **Alarms System**: Add an `IAlarmService` to handle critical errors and provide user alerts.
-- **Security**: Add role-based access control (RBAC) for different operator levels.
-- **Recipe Management**: Store and load process parameters for different chip manufacturing steps.
-- **Custom Controls**: Develop high-end GDI+ or WPF controls for better equipment visualization.
+## 5. Future Expansions
+- **Database Logging**: Write sensor data to InfluxDB or SQL Server.
+- **Alarms System**: Centralized alarm handling and user notification.
+- **Recipe Management**: Store manufacturing parameters in JSON or DB.
