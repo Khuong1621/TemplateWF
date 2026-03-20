@@ -17,6 +17,12 @@ namespace SemiconductorControlSystem.UI
         private readonly ILoggerService _logger;
         private readonly IConfigService _config;
 
+        // Visual constants for the modern theme
+        private static readonly Color ColorRunning = Color.FromArgb(46, 204, 113);
+        private static readonly Color ColorError = Color.FromArgb(231, 76, 60);
+        private static readonly Color ColorIdle = Color.FromArgb(52, 73, 94);
+        private static readonly Color ColorText = Color.FromArgb(236, 240, 241);
+
         // Cache for dynamic UI controls to update status easily
         private readonly Dictionary<string, Panel> _deviceIndicatorMap = new Dictionary<string, Panel>();
 
@@ -51,24 +57,27 @@ namespace SemiconductorControlSystem.UI
 
         private void InitializeDynamicUI()
         {
+            pnlDevices.Controls.Clear();
+            _deviceIndicatorMap.Clear();
+
             foreach (var device in _deviceServices)
             {
                 var pnl = new Panel
                 {
-                    Width = 120,
-                    Height = 80,
-                    BackColor = Color.Gray,
-                    BorderStyle = BorderStyle.FixedSingle,
-                    Margin = new Padding(10)
+                    Width = 140,
+                    Height = 90,
+                    BackColor = ColorIdle,
+                    Margin = new Padding(8),
+                    Padding = new Padding(2)
                 };
 
                 var lbl = new Label
                 {
-                    Text = device.DeviceName,
+                    Text = device.DeviceName.Replace("_", " "),
                     Dock = DockStyle.Fill,
                     TextAlign = ContentAlignment.MiddleCenter,
-                    ForeColor = Color.White,
-                    Font = new Font("Segoe UI", 9F, FontStyle.Bold)
+                    ForeColor = ColorText,
+                    Font = new Font("Segoe UI", 8.5F, FontStyle.Bold)
                 };
 
                 pnl.Controls.Add(lbl);
@@ -95,7 +104,7 @@ namespace SemiconductorControlSystem.UI
                 return;
             }
             lblSensorValue.Text = $"{data.Value:F1} {data.Unit}";
-            lblSensorTime.Text = $"Last update: {data.Timestamp:HH:mm:ss}";
+            lblSensorTime.Text = $"Last data received: {data.Timestamp:HH:mm:ss}";
         }
 
         private void UpdateDeviceStatusUI(string deviceName, DeviceStatus status)
@@ -110,19 +119,19 @@ namespace SemiconductorControlSystem.UI
             {
                 pnl.BackColor = status switch
                 {
-                    DeviceStatus.Running => Color.Green,
-                    DeviceStatus.Error => Color.Red,
-                    DeviceStatus.Idle => Color.Gray,
-                    _ => Color.DimGray
+                    DeviceStatus.Running => ColorRunning,
+                    DeviceStatus.Error => ColorError,
+                    DeviceStatus.Idle => ColorIdle,
+                    _ => Color.FromArgb(45, 52, 54)
                 };
             }
-            _logger.LogInfo($"Device {deviceName} status updated to {status}");
+            _logger.LogInfo($"[STATE] {deviceName} -> {status}");
         }
 
         private async void btnStart_Click(object sender, EventArgs e)
         {
             btnStart.Enabled = false;
-            _logger.LogInfo("System initialization started...");
+            _logger.LogInfo("System booting up...");
 
             try
             {
@@ -135,11 +144,11 @@ namespace SemiconductorControlSystem.UI
 
                 _sensorService.StartSampling();
                 btnStop.Enabled = true;
-                _logger.LogInfo("System is now ONLINE.");
+                _logger.LogInfo("STATUS: ONLINE - All systems functional.");
             }
             catch (Exception ex)
             {
-                _logger.LogError("Critical startup error", ex);
+                _logger.LogError("SYSTEM FAULT during startup", ex);
                 btnStart.Enabled = true;
             }
         }
@@ -147,7 +156,7 @@ namespace SemiconductorControlSystem.UI
         private async void btnStop_Click(object sender, EventArgs e)
         {
             btnStop.Enabled = false;
-            _logger.LogInfo("System shutdown sequence initiated...");
+            _logger.LogInfo("Initiating system shutdown sequence...");
 
             _sensorService.StopSampling();
 
@@ -158,7 +167,7 @@ namespace SemiconductorControlSystem.UI
 
             await _plcService.DisconnectAsync();
             btnStart.Enabled = true;
-            _logger.LogInfo("System is now OFFLINE.");
+            _logger.LogInfo("STATUS: OFFLINE - Safe shutdown completed.");
         }
     }
 }

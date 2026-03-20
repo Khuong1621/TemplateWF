@@ -7,13 +7,16 @@ namespace SemiconductorControlSystem.UI
     {
         private System.ComponentModel.IContainer components = null;
 
-        private Button btnStart;
-        private Button btnStop;
-        private TextBox txtLog;
+        private TableLayoutPanel mainLayout;
+        private FlowLayoutPanel topActionPanel;
+        private Panel sensorValuePanel;
         private Label lblSensorValue;
         private Label lblSensorTime;
         private GroupBox grpDeviceStatus;
         private FlowLayoutPanel pnlDevices;
+        private TextBox txtLog;
+        private Button btnStart;
+        private Button btnStop;
 
         protected override void Dispose(bool disposing)
         {
@@ -26,100 +29,121 @@ namespace SemiconductorControlSystem.UI
 
         private void InitializeComponent()
         {
+            this.mainLayout = new TableLayoutPanel();
+            this.topActionPanel = new FlowLayoutPanel();
             this.btnStart = new Button();
             this.btnStop = new Button();
-            this.txtLog = new TextBox();
+            this.sensorValuePanel = new Panel();
             this.lblSensorValue = new Label();
             this.lblSensorTime = new Label();
             this.grpDeviceStatus = new GroupBox();
             this.pnlDevices = new FlowLayoutPanel();
+            this.txtLog = new TextBox();
 
             this.SuspendLayout();
 
-            // btnStart
-            this.btnStart.Location = new Point(12, 12);
-            this.btnStart.Name = "btnStart";
-            this.btnStart.Size = new Size(120, 50);
-            this.btnStart.TabIndex = 0;
-            this.btnStart.Text = "START SYSTEM";
-            this.btnStart.BackColor = Color.LightGreen;
+            // Main Layout Container (3 rows: Controls, Devices, Logs)
+            this.mainLayout.ColumnCount = 1;
+            this.mainLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            this.mainLayout.RowCount = 3;
+            this.mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 160F));
+            this.mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 40F));
+            this.mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 60F));
+            this.mainLayout.Dock = DockStyle.Fill;
+            this.mainLayout.Padding = new Padding(15);
+            this.mainLayout.BackColor = Color.FromArgb(30, 30, 35);
+
+            // Row 1: Top Panel (Buttons + Sensor Value)
+            this.topActionPanel.Dock = DockStyle.Top;
+            this.topActionPanel.Height = 60;
+            this.topActionPanel.BackColor = Color.Transparent;
+
+            this.btnStart.Size = new Size(150, 45);
+            this.btnStart.Text = "▶ START SYSTEM";
+            this.btnStart.BackColor = Color.FromArgb(46, 204, 113);
+            this.btnStart.ForeColor = Color.White;
             this.btnStart.FlatStyle = FlatStyle.Flat;
+            this.btnStart.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            this.btnStart.Cursor = Cursors.Hand;
             this.btnStart.Click += new System.EventHandler(this.btnStart_Click);
 
-            // btnStop
-            this.btnStop.Enabled = false;
-            this.btnStop.Location = new Point(140, 12);
-            this.btnStop.Name = "btnStop";
-            this.btnStop.Size = new Size(120, 50);
-            this.btnStop.TabIndex = 1;
-            this.btnStop.Text = "STOP SYSTEM";
-            this.btnStop.BackColor = Color.Salmon;
+            this.btnStop.Size = new Size(150, 45);
+            this.btnStop.Text = "■ STOP SYSTEM";
+            this.btnStop.BackColor = Color.FromArgb(231, 76, 60);
+            this.btnStop.ForeColor = Color.White;
             this.btnStop.FlatStyle = FlatStyle.Flat;
+            this.btnStop.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            this.btnStop.Enabled = false;
+            this.btnStop.Cursor = Cursors.Hand;
             this.btnStop.Click += new System.EventHandler(this.btnStop_Click);
 
-            // lblSensorValue
+            this.topActionPanel.Controls.Add(this.btnStart);
+            this.topActionPanel.Controls.Add(this.btnStop);
+
+            this.sensorValuePanel.Dock = DockStyle.Fill;
+            this.sensorValuePanel.BackColor = Color.Transparent;
+            this.sensorValuePanel.Padding = new Padding(0, 5, 0, 0);
+
             this.lblSensorValue.AutoSize = true;
-            this.lblSensorValue.Font = new Font("Segoe UI", 32F, FontStyle.Bold);
-            this.lblSensorValue.ForeColor = Color.DarkBlue;
-            this.lblSensorValue.Location = new Point(12, 80);
-            this.lblSensorValue.Name = "lblSensorValue";
-            this.lblSensorValue.Size = new Size(140, 59);
-            this.lblSensorValue.TabIndex = 2;
-            this.lblSensorValue.Text = "0.0 C";
+            this.lblSensorValue.Font = new Font("Consolas", 36F, FontStyle.Bold);
+            this.lblSensorValue.ForeColor = Color.FromArgb(52, 152, 219);
+            this.lblSensorValue.Location = new Point(0, 5);
+            this.lblSensorValue.Text = "0.0 °C";
 
-            // lblSensorTime
             this.lblSensorTime.AutoSize = true;
-            this.lblSensorTime.Font = new Font("Segoe UI", 10F, FontStyle.Italic);
-            this.lblSensorTime.Location = new Point(12, 145);
-            this.lblSensorTime.Name = "lblSensorTime";
-            this.lblSensorTime.Size = new Size(120, 19);
-            this.lblSensorTime.TabIndex = 3;
-            this.lblSensorTime.Text = "Last update: N/A";
+            this.lblSensorTime.Font = new Font("Segoe UI", 9F, FontStyle.Italic);
+            this.lblSensorTime.ForeColor = Color.Gray;
+            this.lblSensorTime.Location = new Point(5, 65);
+            this.lblSensorTime.Text = "Status: OFFLINE";
 
-            // grpDeviceStatus
-            this.grpDeviceStatus.Controls.Add(this.pnlDevices);
-            this.grpDeviceStatus.Location = new Point(12, 180);
-            this.grpDeviceStatus.Name = "grpDeviceStatus";
-            this.grpDeviceStatus.Size = new Size(760, 160);
-            this.grpDeviceStatus.TabIndex = 4;
-            this.grpDeviceStatus.TabStop = false;
-            this.grpDeviceStatus.Text = "Realtime Equipment Status";
+            this.sensorValuePanel.Controls.Add(this.lblSensorValue);
+            this.sensorValuePanel.Controls.Add(this.lblSensorTime);
 
-            // pnlDevices
+            Panel topRowContainer = new Panel { Dock = DockStyle.Fill };
+            topRowContainer.Controls.Add(this.sensorValuePanel);
+            topRowContainer.Controls.Add(this.topActionPanel);
+            this.mainLayout.Controls.Add(topRowContainer, 0, 0);
+
+            // Row 2: Equipment Status Group
+            this.grpDeviceStatus.Dock = DockStyle.Fill;
+            this.grpDeviceStatus.ForeColor = Color.LightGray;
+            this.grpDeviceStatus.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            this.grpDeviceStatus.Text = " EQUIPMENT REAL-TIME MONITORING ";
+            this.grpDeviceStatus.Padding = new Padding(10);
+
             this.pnlDevices.Dock = DockStyle.Fill;
-            this.pnlDevices.Location = new Point(3, 19);
-            this.pnlDevices.Name = "pnlDevices";
-            this.pnlDevices.Padding = new Padding(10);
-            this.pnlDevices.Size = new Size(754, 138);
-            this.pnlDevices.TabIndex = 0;
+            this.pnlDevices.AutoScroll = true;
+            this.pnlDevices.BackColor = Color.FromArgb(40, 40, 45);
+            this.grpDeviceStatus.Controls.Add(this.pnlDevices);
+            this.mainLayout.Controls.Add(this.grpDeviceStatus, 0, 1);
 
-            // txtLog
-            this.txtLog.Location = new Point(12, 350);
+            // Row 3: System Logs
+            this.txtLog.Dock = DockStyle.Fill;
             this.txtLog.Multiline = true;
-            this.txtLog.Name = "txtLog";
             this.txtLog.ReadOnly = true;
             this.txtLog.ScrollBars = ScrollBars.Vertical;
-            this.txtLog.Size = new Size(760, 200);
-            this.txtLog.TabIndex = 5;
-            this.txtLog.BackColor = Color.Black;
-            this.txtLog.ForeColor = Color.Lime;
-            this.txtLog.Font = new Font("Consolas", 9F);
+            this.txtLog.BackColor = Color.FromArgb(20, 20, 25);
+            this.txtLog.ForeColor = Color.FromArgb(180, 180, 180);
+            this.txtLog.Font = new Font("Consolas", 9.5F);
+            this.txtLog.BorderStyle = BorderStyle.None;
+            this.mainLayout.Controls.Add(this.txtLog, 0, 2);
 
             // MainForm
             this.AutoScaleDimensions = new SizeF(7F, 15F);
             this.AutoScaleMode = AutoScaleMode.Font;
-            this.ClientSize = new Size(784, 561);
-            this.Controls.Add(this.txtLog);
-            this.Controls.Add(this.grpDeviceStatus);
-            this.Controls.Add(this.lblSensorTime);
-            this.Controls.Add(this.lblSensorValue);
-            this.Controls.Add(this.btnStop);
-            this.Controls.Add(this.btnStart);
+            this.ClientSize = new Size(900, 700);
+            this.MinimumSize = new Size(600, 500);
+            this.Controls.Add(this.mainLayout);
             this.Name = "MainForm";
-            this.Text = "Semiconductor Control Dashboard v1.0";
+            this.Text = "Semiconductor Control System v2.0 - Responsive Dashboard";
+            this.BackColor = Color.FromArgb(30, 30, 35);
+            this.mainLayout.ResumeLayout(false);
+            this.mainLayout.PerformLayout();
+            this.topActionPanel.ResumeLayout(false);
+            this.sensorValuePanel.ResumeLayout(false);
+            this.sensorValuePanel.PerformLayout();
             this.grpDeviceStatus.ResumeLayout(false);
             this.ResumeLayout(false);
-            this.PerformLayout();
         }
     }
 }
